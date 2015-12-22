@@ -29,7 +29,9 @@
 #include <iostream>
 #include <signal.h>
 #include <opencv2/opencv.hpp>
-
+#include <Eigen/Dense>
+#include <Eigen/SVD>
+#include <Eigen/Eigenvalues>
 
 /// [headers]
 #include <libfreenect2/libfreenect2.hpp>
