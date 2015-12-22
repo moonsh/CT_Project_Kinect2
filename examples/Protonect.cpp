@@ -27,8 +27,9 @@
 /** @file Protonect.cpp Main application file. */
 
 #include <iostream>
-#include <signal.h> 
-#include <Windows.h>
+#include <signal.h>
+#include <opencv2/opencv.hpp>
+
 
 /// [headers]
 #include <libfreenect2/libfreenect2.hpp>
@@ -114,7 +115,6 @@ int main(int argc, char *argv[])
   std::cerr << "Environment variables: LOGFILE=<protonect.log>" << std::endl;
   std::cerr << "Usage: " << program_path << " [gl | cl | cpu] [<device serial>] [-noviewer]" << std::endl;
   std::cerr << "To pause and unpause: pkill -USR1 Protonect" << std::endl;
-  std::cout << " wow " << std::endl;
   size_t executable_name_idx = program_path.rfind("Protonect");
 
   std::string binpath = "/";
@@ -254,8 +254,6 @@ int main(int argc, char *argv[])
   viewer_enabled = false;
 #endif
 
-  int n=0;
-
 /// [loop start]
   while(!protonect_shutdown)
   {
@@ -267,31 +265,6 @@ int main(int argc, char *argv[])
 
 /// [registration]
     registration->apply(rgb, depth, &undistorted, &registered);
-
-	int xi, yi;
-	float X, Y, Z, RGB;
-	unsigned int r, g, b;
-	std::ofstream Savefile2("xyz.obj");
-	
-	if (n==1)
-	{
-		for (yi = 0; yi < 424; yi = yi + 1)
-		{
-			for (xi = 0; xi < 512; xi = xi + 1)
-			{
-
-				registration->getPointXYZRGB(&undistorted, &registered, yi, xi, X, Y, Z, RGB,r,g,b);
-				Savefile2 << "v   " << -X << "   " << -Y << "   " << -Z << "   " << r << "   " << g << "   " << b << std::endl;
-
-			}
-		}
-	
-		Savefile2.close();
-
-	}
-		n = n + 1;
-
-		
 /// [registration]
 
     framecount++;
@@ -315,12 +288,6 @@ int main(int argc, char *argv[])
 /// [loop end]
     listener.release(frames);
     /** libfreenect2::this_thread::sleep_for(libfreenect2::chrono::milliseconds(100)); */
-
-	if (n == 2)
-	{
-		break;
-	}
-
   }
 /// [loop end]
 

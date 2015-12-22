@@ -96,7 +96,7 @@ public:
    *     uint8_t g = p[1];
    *     uint8_t r = p[2];
    */
-  void getPointXYZRGB(const Frame* undistorted, const Frame* registered, int ro, int c, float& x, float& y, float& z, float& rgb, unsigned int& r, unsigned int& g, unsigned int& b) const;
+  void getPointXYZRGB (const Frame* undistorted, const Frame* registered, int r, int c, float& x, float& y, float& z, float& rgb) const;
 
 private:
   RegistrationImpl *impl_;

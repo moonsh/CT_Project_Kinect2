@@ -50,7 +50,7 @@ public:
 
   void apply(int dx, int dy, float dz, float& cx, float &cy) const;
   void apply(const Frame* rgb, const Frame* depth, Frame* undistorted, Frame* registered, const bool enable_filter, Frame* bigdepth, int* color_depth_map) const;
-  void RegistrationImpl::getPointXYZRGB(const Frame* undistorted, const Frame* registered, int ro, int c, float& x, float& y, float& z, float& rgb, unsigned int& r, unsigned int& g, unsigned int& b) const;
+  void getPointXYZRGB (const Frame* undistorted, const Frame* registered, int r, int c, float& x, float& y, float& z, float& rgb) const;
   void distort(int mx, int my, float& dx, float& dy) const;
   void depth_to_color(float mx, float my, float& rx, float& ry) const;
 
@@ -271,51 +271,35 @@ void RegistrationImpl::apply(const Frame *rgb, const Frame *depth, Frame *undist
   if (!color_depth_map) delete[] depth_to_c_off;
 }
 
-void Registration::getPointXYZRGB(const Frame* undistorted, const Frame* registered, int ro, int c, float& x, float& y, float& z, float& rgb, unsigned int& r, unsigned int& g, unsigned int& b) const
+void Registration::getPointXYZRGB (const Frame* undistorted, const Frame* registered, int r, int c, float& x, float& y, float& z, float& rgb) const
 {
-  impl_->getPointXYZRGB(undistorted, registered, ro, c, x, y, z, rgb,r,g,b);
+  impl_->getPointXYZRGB(undistorted, registered, r, c, x, y, z, rgb);
 }
 
-
-void RegistrationImpl::getPointXYZRGB(const Frame* undistorted, const Frame* registered, int ro, int c, float& x, float& y, float& z, float& rgb, unsigned int& r, unsigned int& g, unsigned int& b) const
+void RegistrationImpl::getPointXYZRGB (const Frame* undistorted, const Frame* registered, int r, int c, float& x, float& y, float& z, float& rgb) const
 {
-	const float bad_point = std::numeric_limits<float>::quiet_NaN();
-	const float cx(depth.cx), cy(depth.cy);
-	const float fx(1 / depth.fx), fy(1 / depth.fy);
-	float* undistorted_data = (float *)undistorted->data;
-	float* registered_data = (float *)registered->data;
-	const float depth_val = undistorted_data[512 * ro + c] / 1000.0f; //scaling factor, so that value of 1 is one meter.
-
-	if (isnan(depth_val) || depth_val <= 0.001)
-	{
-		//depth value is not valid
-		x = y = z = bad_point;
-		rgb = 0;
-		return;
-	}
-	else
-	{
-
-		x = (c + 0.5 - cx) * fx * depth_val;
-		y = (ro + 0.5 - cy) * fy * depth_val;
-		z = depth_val;
-		rgb = *reinterpret_cast<float*>(&registered_data[512 * ro + c]);
-
-		uint32_t rgb_ = *reinterpret_cast<int*>(&rgb);
-		uint8_t r_, g_, b_;
-		r_ = (rgb_ >> 16) & 0x0000ff;
-		g_ = (rgb_ >> 8) & 0x0000ff;
-		b_ = (rgb_)& 0x0000ff;
-
-		r = *((uint8_t *)&r_);
-		g = *((uint8_t *)&g_);
-		b = *((uint8_t *)&b_);
-
-		return;
-
-	}
+  const float bad_point = std::numeric_limits<float>::quiet_NaN();
+  const float cx(depth.cx), cy(depth.cy);
+  const float fx(1/depth.fx), fy(1/depth.fy);
+  float* undistorted_data = (float *)undistorted->data;
+  float* registered_data = (float *)registered->data;
+  const float depth_val = undistorted_data[512*r+c]/1000.0f; //scaling factor, so that value of 1 is one meter.
+  if (isnan(depth_val) || depth_val <= 0.001)
+  {
+    //depth value is not valid
+    x = y = z = bad_point;
+    rgb = 0;
+    return;
+  }
+  else
+  {
+    x = (c + 0.5 - cx) * fx * depth_val;
+    y = (r + 0.5 - cy) * fy * depth_val;
+    z = depth_val;
+    rgb = *reinterpret_cast<float*>(&registered_data[512*r+c]);
+    return;
+  }
 }
-
 
 Registration::Registration(Freenect2Device::IrCameraParams depth_p, Freenect2Device::ColorCameraParams rgb_p):
   impl_(new RegistrationImpl(depth_p, rgb_p)) {}
